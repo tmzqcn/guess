@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: 127.0.0.1
--- Generation Time: 2016-06-08 09:34:41
+-- Generation Time: 2016-06-11 15:09:02
 -- 服务器版本： 10.1.9-MariaDB
 -- PHP Version: 7.0.1
 
@@ -30,34 +30,22 @@ USE `guess`;
 
 CREATE TABLE `user` (
   `id` int(11) NOT NULL,
-  `user_group_id` int(11) NOT NULL,
-  `user` varchar(100) COLLATE utf32_unicode_ci NOT NULL,
+  `roles` varchar(200) COLLATE utf32_unicode_ci NOT NULL DEFAULT 'role_user',
+  `tm_id` int(11) DEFAULT NULL,
+  `email` varchar(100) COLLATE utf32_unicode_ci NOT NULL,
   `name` varchar(100) COLLATE utf32_unicode_ci NOT NULL,
+  `password` varchar(200) COLLATE utf32_unicode_ci NOT NULL,
   `enable` tinyint(1) NOT NULL DEFAULT '1',
-  `update_at` datetime NOT NULL,
-  `create_at` datetime NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf32 COLLATE=utf32_unicode_ci;
-
--- --------------------------------------------------------
-
---
--- 表的结构 `user_group`
---
-
-CREATE TABLE `user_group` (
-  `id` int(11) NOT NULL,
-  `group_name` varchar(100) COLLATE utf32_unicode_ci NOT NULL,
-  `description` text COLLATE utf32_unicode_ci NOT NULL,
-  `authority` tinyint(4) NOT NULL DEFAULT '0'
+  `update_at` int(11) NOT NULL DEFAULT '1',
+  `create_at` int(11) NOT NULL DEFAULT '1'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf32 COLLATE=utf32_unicode_ci;
 
 --
--- 转存表中的数据 `user_group`
+-- 转存表中的数据 `user`
 --
 
-INSERT INTO `user_group` (`id`, `group_name`, `description`, `authority`) VALUES
-(1, '注册用户', '', 8),
-(2, '超级管理员', '', 99);
+INSERT INTO `user` (`id`, `roles`, `tm_id`, `email`, `name`, `password`, `enable`, `update_at`, `create_at`) VALUES
+(8, 'role_user', 1111, '1@1.com', '1111', '$6$rounds=5000$usesomesillystri$ZkOG5TjiP4alo4h6LKoXB876LYG4RL15KBXZYTPYqzBqYE3aR91ls5P4hRcoJZmBjAvV6zfgVZVtq47Qm4Rif/', 1, 1465571167, 1465571167);
 
 -- --------------------------------------------------------
 
@@ -71,18 +59,6 @@ CREATE TABLE `user_score` (
   `score` int(11) NOT NULL DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf32 COLLATE=utf32_unicode_ci;
 
--- --------------------------------------------------------
-
---
--- 表的结构 `user_tm_info`
---
-
-CREATE TABLE `user_tm_info` (
-  `id` int(11) NOT NULL,
-  `user_id` int(11) NOT NULL,
-  `tm_id` int(11) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf32 COLLATE=utf32_unicode_ci;
-
 --
 -- Indexes for dumped tables
 --
@@ -92,14 +68,7 @@ CREATE TABLE `user_tm_info` (
 --
 ALTER TABLE `user`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `user` (`user`,`name`);
-
---
--- Indexes for table `user_group`
---
-ALTER TABLE `user_group`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `group_name` (`group_name`);
+  ADD UNIQUE KEY `user` (`email`,`name`);
 
 --
 -- Indexes for table `user_score`
@@ -109,13 +78,6 @@ ALTER TABLE `user_score`
   ADD UNIQUE KEY `user_name` (`user_id`);
 
 --
--- Indexes for table `user_tm_info`
---
-ALTER TABLE `user_tm_info`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `user` (`user_id`,`tm_id`);
-
---
 -- 在导出的表使用AUTO_INCREMENT
 --
 
@@ -123,21 +85,11 @@ ALTER TABLE `user_tm_info`
 -- 使用表AUTO_INCREMENT `user`
 --
 ALTER TABLE `user`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
---
--- 使用表AUTO_INCREMENT `user_group`
---
-ALTER TABLE `user_group`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 --
 -- 使用表AUTO_INCREMENT `user_score`
 --
 ALTER TABLE `user_score`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
---
--- 使用表AUTO_INCREMENT `user_tm_info`
---
-ALTER TABLE `user_tm_info`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
