@@ -103,6 +103,7 @@ class User extends CI_Controller
 
             //载入user模型
             $this->load->model('user_model');
+
             $password = crypt(html_escape($this->input->post('password')),$this->config->item('salt'));
             $email = html_escape($this->input->post('email'));
 

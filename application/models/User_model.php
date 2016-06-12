@@ -24,7 +24,7 @@
         public function update($user_obj)
         {
             $user_obj->update_at = time();
-            $this->db->update('user', $user_obj);
+            $this->db->update('guess_user', $user_obj);
 
         }
 
@@ -33,7 +33,7 @@
         public function store($user_obj)
         {
             //$this->db->trans_start();
-            if($this->db->insert('user', $user_obj))
+            if($this->db->insert('guess_user', $user_obj))
                 return TRUE;
             else
             {
@@ -48,7 +48,7 @@
         public function match($email,$password)
         {
             $query = $this->db->where('email', $email)
-                ->get('user');
+                ->get('guess_user');
             $row = $query->row();
             if(isset($row))
             {
@@ -63,7 +63,7 @@
         public function get_user_info($email)
         {
             $query = $this->db->where('email', $email)
-                ->get('user');
+                ->get('guess_user');
             $row = $query->row();
             if(isset($row))
             {
@@ -79,7 +79,7 @@
         public function is_enable($email)
         {
             $query = $this->db->where('email', $email)
-                ->get('user');
+                ->get('guess_user');
             $row = $query->row();
             if(isset($row))
             {
@@ -93,7 +93,7 @@
         public function email_check($email)
         {
             //获取此邮箱用户个数
-            $email_num = $this->db->get_where('user',array('email'=>$email))->num_rows();
+            $email_num = $this->db->get_where('guess_user',array('email'=>$email))->num_rows();
             //如果有存在就返回FALSE
             if($email_num)
             {
@@ -109,7 +109,7 @@
         public function name_check($name)
         {
             //获取此昵称用户个数
-            $name_num = $this->db->get_where('user',array('name'=>$name))->num_rows();
+            $name_num = $this->db->get_where('guess_user',array('name'=>$name))->num_rows();
             if($name_num)
             {
                 return TRUE;
