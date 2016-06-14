@@ -523,7 +523,6 @@ $config['salt'] = '$6$rounds=5000$usesomesillystringforyan2$';
  *
  *$config['role_user_admin'] = array('role_user');表示role_user_admin继承role_user权限
  */
-$config['role_user'] = array('role_user');
 $config['role_user_admin'] = array('role_user');
 $config['role_guess_admin'] = array('role_user');
 $config['role_super_admin'] = array('role_user_admin','role_guess_admin');
