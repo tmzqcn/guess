@@ -126,6 +126,7 @@ class User extends CI_Controller
                     {
                         $email = $this->security->xss_clean($user_obj->email);
                         $name = $this->security->xss_clean($user_obj->name);
+                        //roles字符串转换成数组
                         $roles = explode("|",$user_obj->roles);
                         $user_data = array(
                             'email'  => $email,

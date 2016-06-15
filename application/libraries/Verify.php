@@ -14,21 +14,57 @@
         }
         /*
          * 验证用户是否被授权
-         * $need_role表示需要某role
+         * $need_roles表示需要某role
          * $roles表示用户拥有的角色组
-         * eg：用户管理需要role_user_admin这个role，$need_role就是role_user_admin，当前用户的session中roles就是$roles
-         * 参数都是array
+         * eg：用户管理需要role_user_admin这个role，$need_roles就是role_user_admin，当前用户的session中roles就是$roles
+         * 参数都可以是array
          */
-        public function  authorize($need_role,$roles)
+        public function  authorize_by_role($need_roles,$roles)
         {
-            $roles_tmp = $roles;
-            foreach($roles as $role)
+            //如果roles里包含need_roles，验证通过
+            /*
+            if(in_array($need_roles,$roles))
             {
-                if($this->CI->config->item($role))
-                {
-                    
-                }
-            }
+                return TRUE;
+            }*/
+            $r = $roles;
+            $this->get_full_roles($roles,$r);
+
 
         }
+        
+        /*
+         * 获取完整roles
+         * 
+         */
+        public function get_full_roles($roles,$r)
+        {
+
+            /*
+            foreach ($roles as $role)
+            {
+
+                $roles_from_config = $this->CI->config->item($role);
+                if($roles_from_config !== NULL)
+                {
+                    foreach ($roles_from_config as $role_tmp)
+                    {
+
+                        if (!in_array($role_tmp, $r))
+                        {
+                            //放入all_roles尾部
+                            array_push($r, $role_tmp);
+                            $tmp[] = $role_tmp;
+
+                            $this->get_full_roles($tmp,$r);
+                        }
+                        var_dump($r);
+                        var_dump(NULL);
+                    }
+                }
+
+            }
+            */
+        }
+
     }

@@ -1,3 +1,3 @@
 <?php
     echo 'guess index';
-    var_dump($this->session->roles);
+    //var_dump($this->session->roles);
