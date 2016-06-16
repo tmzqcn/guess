@@ -21,50 +21,44 @@
          */
         public function  authorize_by_role($need_roles,$roles)
         {
+            $roles = $this->get_full_roles($roles);
             //如果roles里包含need_roles，验证通过
-            /*
             if(in_array($need_roles,$roles))
             {
                 return TRUE;
-            }*/
-            $r = $roles;
-            $this->get_full_roles($roles,$r);
-
-
+            }
+            else
+            {
+                return FALSE;
+            }
         }
         
         /*
          * 获取完整roles
          * 
          */
-        public function get_full_roles($roles,$r)
+        public function get_full_roles($roles)
         {
-
-            /*
-            foreach ($roles as $role)
+            //如果current($roles)为false表示数组已经结束
+            while(current($roles) !== FALSE)
             {
-
-                $roles_from_config = $this->CI->config->item($role);
+                //获取当前角色继承自哪些角色
+                $roles_from_config = $this->CI->config->item(current($roles));
+                //获取不到表示角色无继承
                 if($roles_from_config !== NULL)
                 {
-                    foreach ($roles_from_config as $role_tmp)
+                    foreach ($roles_from_config as $role)
                     {
-
-                        if (!in_array($role_tmp, $r))
+                        if (!in_array($role, $roles))
                         {
-                            //放入all_roles尾部
-                            array_push($r, $role_tmp);
-                            $tmp[] = $role_tmp;
-
-                            $this->get_full_roles($tmp,$r);
+                            //放入roles尾部
+                            array_push($roles, $role);
                         }
-                        var_dump($r);
-                        var_dump(NULL);
                     }
                 }
-
+                //指到下一个数据
+                next($roles);
             }
-            */
+            return $roles;
         }
-
     }
