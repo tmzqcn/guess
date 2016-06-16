@@ -19,8 +19,12 @@
          * eg：用户管理需要role_user_admin这个role，$need_roles就是role_user_admin，当前用户的session中roles就是$roles
          * 参数都可以是array
          */
-        public function  authorize_by_role($need_roles,$roles)
+        public function  authorize_by_role($need_roles = 'role_user',$roles)
         {
+            if($roles == NULL)
+            {
+                return FALSE;
+            }
             $roles = $this->get_full_roles($roles);
             //如果roles里包含need_roles，验证通过
             if(in_array($need_roles,$roles))

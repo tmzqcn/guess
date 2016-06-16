@@ -45,7 +45,7 @@
         }
 
         //判断邮箱和密码是否匹配
-        public function match($email,$password)
+        public function match($email='email',$password='password')
         {
             $query = $this->db->where('email', $email)
                 ->get('guess_user');
@@ -60,7 +60,7 @@
 
         //通过email地址获取用户信息对象
         //return obj
-        public function get_user_info($email)
+        public function get_user_info($email='email')
         {
             $query = $this->db->where('email', $email)
                 ->get('guess_user');
@@ -76,7 +76,7 @@
         }
 
         //判断用户账号是否可用
-        public function is_enable($email)
+        public function is_enable($email='email')
         {
             $query = $this->db->where('email', $email)
                 ->get('guess_user');
@@ -90,7 +90,7 @@
         }
 
         //判断邮箱是否已经注册
-        public function email_check($email)
+        public function email_check($email='email')
         {
             //获取此邮箱用户个数
             $email_num = $this->db->get_where('guess_user',array('email'=>$email))->num_rows();
@@ -106,7 +106,7 @@
         }
 
         //判断昵称是否注册
-        public function name_check($name)
+        public function name_check($name='name')
         {
             //获取此昵称用户个数
             $name_num = $this->db->get_where('guess_user',array('name'=>$name))->num_rows();
@@ -118,6 +118,26 @@
             {
                 return FALSE;
             }
+        }
+
+        /*
+         * 获取user
+         * page_num是当前页码
+         * num_per_page是每页显示数目
+         */
+        public function get_user($page_num=1,$num_per_page=20)
+        {
+            $query = $this->db->limit($num_per_page,($page_num-1)*$num_per_page)
+                ->order_by('create_at', 'DESC')
+                ->get('guess_user')
+                ;
+            return $query;
+        }
+        //返回所有用户数目
+        public function get_user_num()
+        {
+            $query = $this->db->get('guess_user');
+            return count($query->result());
         }
 
     }

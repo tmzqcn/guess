@@ -6,9 +6,35 @@ class User extends CI_Controller
     //
     public function index()
     {
-        $this->load->view('inc/header');
-        $this->load->view('user/index');
-        $this->load->view('inc/footer');
+        if($this->verify->authorize_by_role('role_user_admin',$this->session->roles))
+        {
+            //获取所有用户
+            $this->load->model('user_model');
+
+            //分页函数
+            $this->load->library('pagination');
+
+            //要使用分页的目标url
+            $config['base_url'] = base_url().'user/index';
+
+            $this->config->load('pagination.php');
+
+
+            $data['user'] = $this->user_model->get_user($this->uri->segment(3, 1),$this->config->item('per_page'));
+
+            //数据总数
+            $config['total_rows'] = $this->user_model->get_user_num();
+
+            $this->pagination->initialize($config);
+
+            $this->load->view('inc/header');
+            $this->load->view('user/index',$data);
+            $this->load->view('inc/footer');
+        }
+        else
+        {
+            show_error('权限不足，无法访问此页',403);
+        }
     }
     
     //注册

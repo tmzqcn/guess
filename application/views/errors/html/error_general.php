@@ -59,7 +59,7 @@ p {
 	<div id="container">
 		<h1><?php echo $heading; ?></h1>
 		<?php echo $message; ?>
-		<p><a href="<?php //echo base_url(); ?>">点击返回首页</a></p>
+		<p><a href="<?php echo base_url(); ?>">点击返回首页</a></p>
 	</div>
 </body>
 </html>
