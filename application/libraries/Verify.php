@@ -21,10 +21,17 @@
          */
         public function  authorize_by_role($need_roles = 'role_user',$roles)
         {
+            //无session的roles返回false
             if($roles == NULL)
             {
                 return FALSE;
             }
+            //先看是否在roles里
+            if(in_array($need_roles,$roles))
+            {
+                return TRUE;
+            }
+            //如果没有就获取完整roles再判断
             $roles = $this->get_full_roles($roles);
             //如果roles里包含need_roles，验证通过
             if(in_array($need_roles,$roles))

@@ -15,10 +15,10 @@
     foreach($user->result() as $u)
     {
         echo '<tr>';
-        echo '<td>'.$n.'</td>';
-        echo '<td>'.$u->email.'</td>';
-        echo '<td>'.$u->name.'</td>';
-        echo '<td>'.$u->tm_id.'</td>';
+        echo '<td>'.$this->security->xss_clean($n).'</td>';
+        echo '<td>'.$this->security->xss_clean($u->email).'</td>';
+        echo '<td>'.$this->security->xss_clean($u->name).'</td>';
+        echo '<td>'.$this->security->xss_clean($u->tm_id).'</td>';
         if($u->enable == 1)
         {
             echo '<td>启用</td>';

@@ -15,7 +15,7 @@ class User extends CI_Controller
             $this->load->library('pagination');
 
             //要使用分页的目标url
-            $config['base_url'] = base_url().'user/index';
+            $config['base_url'] = base_url('user/index');
 
             $this->config->load('pagination.php');
 
