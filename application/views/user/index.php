@@ -15,7 +15,7 @@
     foreach($user->result() as $u)
     {
         echo '<tr>';
-        echo '<td>'.$this->security->xss_clean($n).'</td>';
+        echo '<td>'.$n.'</td>';
         echo '<td>'.$this->security->xss_clean($u->email).'</td>';
         echo '<td>'.$this->security->xss_clean($u->name).'</td>';
         echo '<td>'.$this->security->xss_clean($u->tm_id).'</td>';
