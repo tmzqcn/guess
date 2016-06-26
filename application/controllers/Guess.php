@@ -25,11 +25,12 @@ class Guess extends CI_Controller
             return FALSE;
         }
 
+        $this->config->load('profile.php');
         //设置post的数据
         $post = array (
-            'password' => '',
+            'password' => $this->config->item('tm_password'),
             'remember' => 0,
-            'user' => ''
+            'user' => $this->config->item('tm_user')
         );
         //登录地址
         $url = "http://trophymanager.com/ajax/login.ajax.php";
