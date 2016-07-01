@@ -7,16 +7,34 @@ class Guess extends CI_Controller
     public function index()
     {
 
-        $this->load->view('inc/header');
-        //var_dump($this->config->item('role_user'));
-        //var_dump($this->session->roles);
+        //获取所有用户
+        $this->load->model('guess_model');
 
-        //var_dump($this->verify->authorize_by_role('role_xx_admin',$this->session->roles));
+        //分页函数
+        $this->load->library('pagination');
+
+        //要使用分页的目标url
+        $config['base_url'] = base_url('guess/index');
+
+        $this->config->load('pagination.php');
+
+
+        $data['match'] = $this->guess_model->get_match($this->uri->segment(3, 1),$this->config->item('per_page'));
+
+        //数据总数
+        $config['total_rows'] = $this->guess_model->get_match_num();
+
+        $this->pagination->initialize($config);
+
+
+        $this->load->view('inc/header');
+
 
         $this->load->view('guess/index');
         $this->load->view('inc/footer');
     }
 
+    //获取比赛信息
     private function get_match_info($match_id)
     {
         //id不是数字就返回false
@@ -25,7 +43,7 @@ class Guess extends CI_Controller
             return FALSE;
         }
 
-        $this->config->load('profile.php');
+        $this->config->load('tm_account.php');
         //设置post的数据
         $post = array (
             'password' => $this->config->item('tm_password'),
@@ -75,7 +93,7 @@ class Guess extends CI_Controller
         return $rs;
     }
 
-    public function store()
+    public function add()
     {
         if($this->verify->authorize_by_role('role_guess_admin',$this->session->roles))
         {
@@ -86,8 +104,10 @@ class Guess extends CI_Controller
             //载入表单验证
             $this->load->library('form_validation');
             //表单验证规则
-            $this->form_validation->set_rules('match_id','比赛ID','trim|required|is_natural|min_length[6]|max_length[30]');
-
+            $this->form_validation->set_rules('match_id','比赛ID','trim|required|is_natural|min_length[6]|max_length[30]|callback_match_check');
+            $this->form_validation->set_rules('home_odds','主队赢赔率','trim|required|numeric|max_length[8]|greater_than[1]');
+            $this->form_validation->set_rules('away_odds','客队赢赔率','trim|required|numeric|max_length[8]|greater_than[1]');
+            $this->form_validation->set_rules('draw_odds','平局赔率','trim|required|numeric|max_length[8]|greater_than[1]');
             /*
             $this->form_validation->set_rules('deadline','截至时间',
                 array(
@@ -114,6 +134,7 @@ class Guess extends CI_Controller
             //自定义错误提示
             $this->form_validation->set_message('min_length', '{field}必须至少{param}位.');
             $this->form_validation->set_message('max_length', '{field}不得超过{param}位.');
+            $this->form_validation->set_message('greater_than', '{field}必须大于{param}.');
             //$this->form_validation->set_message('deadline_callable', '截至时间必须早于比赛时间.');
 
             if ($this->form_validation->run() == FALSE)
@@ -125,48 +146,18 @@ class Guess extends CI_Controller
             }
             else
             {
-                //载入user模型
-                $this->load->model('guess_model');
-                if($this->guess_model->match_is_exist($this->input->post('match_id')))
+                $match_id = $this->input->post('match_id');
+                if($this->store($match_id))
                 {
-                    show_error('添加失败：已存在此比赛',500);
+                    $data['message'] = '添加比赛成功！';
+                    $data['url'] = 'guess/index';
+                    $this->load->view('inc/header');
+                    $this->load->view('inc/success',$data);
+                    $this->load->view('inc/footer');
                 }
                 else
                 {
-                    $match_info = $this->get_match_info($this->input->post('match_id'));
-
-                    if($match_info !== FALSE && isset($match_info['match_data']['live_min']))
-                    {
-                        //echo date('Y-m-d H:i',time()+abs($match_info['match_data']['live_min'])*60);
-
-                        //获取比赛开始时间戳
-                        $fixture = time()+abs($match_info['match_data']['live_min'])*60;
-                        //截至时间提前2h
-                        $deadline = $fixture-2*3600;
-                        $home_name = $match_info['club']['home']['club_name'];
-                        $home_id = $match_info['club']['home']['id'];
-                        $away_name = $match_info['club']['away']['club_name'];
-                        $away_id = $match_info['club']['away']['id'];
-
-
-                        if($this->guess_model->store_match($this->input->post('match_id'),$home_id,$home_name,$away_id,$away_name,$fixture,$deadline))
-                        {
-                            $data['message'] = '添加比赛成功！';
-                            $data['url'] = 'guess/index';
-                            $this->load->view('inc/header');
-                            $this->load->view('inc/success',$data);
-                            $this->load->view('inc/footer');
-                        }
-                        else
-                        {
-                            show_error('添加失败：数据库添加失败',500);
-                        }
-
-                    }
-                    else
-                    {
-                        show_error('比赛ID错误,添加比赛失败',500);
-                    }
+                    show_error('比赛ID错误，添加失败',500);
                 }
             }
         }
@@ -176,6 +167,68 @@ class Guess extends CI_Controller
         }
     }
 
+    //删除比赛
+    public function delete()
+    {
+        if($this->verify->authorize_by_role('role_guess_admin',$this->session->roles))
+        {
 
+        }
+        else
+        {
+            show_error('权限不足，无法访问此页',403);
+        }
+    }
+
+    /*
+     * 添加比赛记录
+     */
+    private function store($match_id)
+    {
+        $match_info = $this->get_match_info($match_id);
+
+        if($match_info !== FALSE && isset($match_info['match_data']['live_min']))
+        {
+            //echo date('Y-m-d H:i',time()+abs($match_info['match_data']['live_min'])*60);
+
+            //获取比赛开始时间戳
+            $fixture = time()+abs($match_info['match_data']['live_min'])*60;
+            //截至时间提前2h
+            $deadline = $fixture-2*3600;
+            $home_name = $match_info['club']['home']['club_name'];
+            $home_id = $match_info['club']['home']['id'];
+            $away_name = $match_info['club']['away']['club_name'];
+            $away_id = $match_info['club']['away']['id'];
+
+            //载入模型
+            $this->load->model('guess_model');
+            if($this->guess_model->store_match($match_id,$home_id,$home_name,$away_id,$away_name,$fixture,$deadline))
+            {
+                return TRUE;
+            }
+            else
+            {
+                return FALSE;
+            }
+        }
+        else
+        {
+            return FALSE;
+        }
+    }
+
+    //回调验证match是否存在
+    public function match_check($id)
+    {
+        if ($this->guess_model->match_is_exist($id))
+        {
+            $this->form_validation->set_message('match_check', '比赛：{field} 已存在');
+            return FALSE;
+        }
+        else
+        {
+            return TRUE;
+        }
+    }
 
 }

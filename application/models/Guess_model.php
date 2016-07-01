@@ -16,6 +16,7 @@
 
         }
 
+        //添加
         public function store_match($match_id,$home_id,$home_name,$away_id,$away_name,$fixture,$deadline)
         {
             $this->db->trans_start();
@@ -82,6 +83,26 @@
             {
                 return FALSE;
             }
+        }
+
+        /*
+         * 获取match
+         * page_num是当前页码
+         * num_per_page是每页显示数目
+         */
+        public function get_match($page_num=1,$num_per_page=20)
+        {
+            $query = $this->db->limit($num_per_page,($page_num-1)*$num_per_page)
+                ->order_by('id', 'DESC')
+                ->get('guess_match_info')
+            ;
+            return $query;
+        }
+        //返回所有match数目
+        public function get_match_num()
+        {
+            $query = $this->db->get('guess_match_info');
+            return count($query->result());
         }
 
 

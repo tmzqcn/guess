@@ -8,7 +8,7 @@
 
 <?php
 
-    echo form_open(base_url('guess/store'), 'class="form-horizontal" id="guess_add_form"');
+    echo form_open(base_url('guess/add'), 'class="form-horizontal" id="guess_add_form"');
 ?>
 
 <div class="form-group">
@@ -18,6 +18,26 @@
     </div>
 </div>
 
+<div class="form-group">
+    <label for="home_odds" class="col-sm-2 control-label">主队赢赔率</label>
+    <div class="col-sm-10">
+        <input type="text" class="form-control" id="home_odds" name="home_odds" placeholder="主队赔率" value="<?php echo html_escape(set_value('home_odds')); ?>" >
+    </div>
+</div>
+
+<div class="form-group">
+    <label for="draw_odds" class="col-sm-2 control-label">平局赔率</label>
+    <div class="col-sm-10">
+        <input type="text" class="form-control" id="draw_odds" name="draw_odds" placeholder="平局赔率" value="<?php echo html_escape(set_value('draw_odds')); ?>" >
+    </div>
+</div>
+
+<div class="form-group">
+    <label for="away_odds" class="col-sm-2 control-label">客队赢赔率</label>
+    <div class="col-sm-10">
+        <input type="text" class="form-control" id="away_odds" name="away_odds" placeholder="客队赔率" value="<?php echo html_escape(set_value('away_odds')); ?>" >
+    </div>
+</div>
 
 <div class="form-group">
     <div class="col-sm-offset-2 col-sm-10">
