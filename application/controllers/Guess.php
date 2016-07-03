@@ -21,6 +21,26 @@ class Guess extends CI_Controller
 
         $data['match'] = $this->guess_model->get_match($this->uri->segment(3, 1),$this->config->item('per_page'));
 
+        $match_num = 0;
+        foreach ($data['match'] as $match)
+        {
+            $home_info = $this->guess_model->get_team($match->home_id);
+            $away_info = $this->guess_model->get_team($match->away_id);
+            $data['match'][$match_num]->home_name = $home_info->team_name;
+            $data['match'][$match_num]->away_name = $away_info->team_name;
+
+            $odds_info = $this->guess_model->get_odds($match->id);
+            foreach($odds_info as $odds)
+            {
+                $s = $odds->score;
+                $data['match'][$match_num]->$s = $odds->odds;
+            }
+
+
+            $match_num++;
+        }
+
+
         //数据总数
         $config['total_rows'] = $this->guess_model->get_match_num();
 
@@ -30,7 +50,7 @@ class Guess extends CI_Controller
         $this->load->view('inc/header');
 
 
-        $this->load->view('guess/index');
+        $this->load->view('guess/index',$data);
         $this->load->view('inc/footer');
     }
 
@@ -146,8 +166,11 @@ class Guess extends CI_Controller
             }
             else
             {
-                $match_id = $this->input->post('match_id');
-                if($this->store($match_id))
+                $match_id = html_escape($this->input->post('match_id'));
+                $home_odds = html_escape($this->input->post('home_odds'));
+                $away_odds = html_escape($this->input->post('away_odds'));
+                $draw_odds = html_escape($this->input->post('draw_odds'));
+                if($this->store($match_id,$home_odds,$away_odds,$draw_odds))
                 {
                     $data['message'] = '添加比赛成功！';
                     $data['url'] = 'guess/index';
@@ -183,11 +206,11 @@ class Guess extends CI_Controller
     /*
      * 添加比赛记录
      */
-    private function store($match_id)
+    private function store($match_id,$home_odds,$away_odds,$draw_odds)
     {
         $match_info = $this->get_match_info($match_id);
 
-        if($match_info !== FALSE && isset($match_info['match_data']['live_min']))
+        if($match_info !== FALSE && isset($match_info['match_data']['live_min']) &&isset($match_info['club']['home']['club_name']))
         {
             //echo date('Y-m-d H:i',time()+abs($match_info['match_data']['live_min'])*60);
 
@@ -202,7 +225,7 @@ class Guess extends CI_Controller
 
             //载入模型
             $this->load->model('guess_model');
-            if($this->guess_model->store_match($match_id,$home_id,$home_name,$away_id,$away_name,$fixture,$deadline))
+            if($this->guess_model->store_match($match_id,$home_id,$home_name,$away_id,$away_name,$fixture,$deadline,$home_odds,$away_odds,$draw_odds))
             {
                 return TRUE;
             }
