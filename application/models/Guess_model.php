@@ -16,20 +16,20 @@
 
         }
 
-        //添加
-        public function store_match($match_id,$home_id,$home_name,$away_id,$away_name,$fixture,$deadline,$home_odds,$away_odds,$draw_odds)
+        //添加tm竞猜比赛
+        public function store_tm_match($match_id,$home_id,$home_name,$away_id,$away_name,$fixture,$deadline,$home_odds,$away_odds,$draw_odds)
         {
             $this->db->trans_start();
             //更新球队信息
-            $this->add_team_info($home_id,$home_name);
-            $this->add_team_info($away_id,$away_name);
+            $this->add_team_info($home_name,$home_id);
+            $this->add_team_info($away_name,$away_id);
 
-            if($this->get_by_tmid($away_id)->id&&$this->get_by_tmid($home_id)->id)
+            if($this->get_team_by_tmid($away_id)->id&&$this->get_team_by_tmid($home_id)->id)
             {
                 $match_data = array(
                     'tm_match_id' => $match_id,
-                    'home_id' => $home_id,
-                    'away_id'  => $away_id,
+                    'home_id' => $this->get_team_by_tmid($home_id)->id,//球队id，非tm_id
+                    'away_id'  => $this->get_team_by_tmid($away_id)->id,
                     'fixture' => $fixture,
                     'deadline' => $deadline,
                     'update_at' => time()
@@ -82,16 +82,113 @@
 
         }
 
-        public function add_team_info($tm_id,$name)
+        /*
+        * 添加其他比赛
+        *
+        */
+        public function store($home_name,$away_name,$fixture,$deadline,$home_odds,$away_odds,$draw_odds)
         {
-            $data = array(
-                'team_name' => $name,
-                'tm_id'  => $tm_id
+            $this->db->trans_start();
+            $this->add_team_info($home_name);
+            $this->add_team_info($away_name);
+            $home_id = $this->get_team_by_name($home_name)->id;
+            $away_id = $this->get_team_by_name($away_name)->id;
+            $match_data = array(
+                'tm_match_id' => NULL,
+                'home_id' => $home_id,
+                'away_id'  => $away_id,
+                'fixture' => $fixture,
+                'deadline' => $deadline,
+                'update_at' => time()
             );
-            $this->db->replace('guess_team_info', $data);
+            if($this->db->insert('guess_match_info', $match_data))
+            {
+
+                $match = $this->get_match_by_fixture($home_name,$away_name,$fixture);
+                if($match)
+                {
+                    $id = $match->id;
+                }
+                else
+                {
+                    return FALSE;
+                }
+                $data_home = array(
+                    'match_id' => $id,
+                    'score' => '1',
+                    'odds' => $home_odds
+                );
+                $data_draw = array(
+                    'match_id' => $id,
+                    'score' => '0',
+                    'odds' => $draw_odds
+                );
+                $data_away = array(
+                    'match_id' => $id,
+                    'score' => '-1',
+                    'odds' => $away_odds
+                );
+
+                if($this->db->insert('guess_match_odds', $data_home) && $this->db->insert('guess_match_odds', $data_draw) && $this->db->insert('guess_match_odds', $data_away))
+                {
+                    $this->db->trans_complete();
+                    return TRUE;
+                }
+                else
+                {
+                    return FALSE;
+                }
+
+            }
+            else
+            {
+                return FALSE;
+            }
+
         }
 
-        public function get_by_tmid($tm_id)
+        /*
+         * 添加球队信息
+         * 如果存在就更新球队名
+         * 如果有tmid添加tmid，没有就设置tm_id为null
+         */
+        public function add_team_info($name,$tm_id=NULL)
+        {
+            if($tm_id === NULL)
+            {
+                if(!$this->get_team_by_name($name))
+                {
+
+                    $data = array(
+                        'team_name' => $name,
+                        'tm_id'  => NULL
+                    );
+                    $this->db->insert('guess_team_info', $data);
+                }
+            }
+            else
+            {
+                if($this->get_team_by_tmid($tm_id))
+                {
+                    $data = array(
+                        'team_name' => $name
+                    );
+                    $this->db->where('tm_id',$tm_id);
+                    $this->db->update('guess_team_info', $data);
+                }
+                else
+                {
+                    $data = array(
+                        'team_name' => $name,
+                        'tm_id'  => $tm_id
+                    );
+                    $this->db->insert('guess_team_info', $data);
+                }
+            }
+        }
+
+
+        public function get_team_by_tmid($tm_id)
         {
             $query = $this->db->where('tm_id', $tm_id)
                 ->get('guess_team_info');
@@ -102,6 +199,31 @@
             }
             return FALSE;
         }
+
+        public function get_team_by_id($id)
+        {
+            $query = $this->db->where('id', $id)
+                ->get('guess_team_info');
+            $row = $query->row();
+            if(isset($row))
+            {
+                return $row;
+            }
+            return FALSE;
+        }
+
+        public function get_team_by_name($team_name)
+        {
+            $query = $this->db->where('team_name', $team_name)
+                ->get('guess_team_info');
+            $row = $query->row();
+            if(isset($row))
+            {
+                return $row;
+            }
+            return FALSE;
+        }
+
         //通过tm match id 获取比赛
         public function get_match_by_tmid($tm_match_id)
         {
@@ -113,6 +235,22 @@
                 return $row;
             }
             return FALSE;
+        }
+
+        //通过主客队名和比赛时间获取比赛
+        public function get_match_by_fixture($home_name,$away_name,$fixture)
+        {
+            $this->db->select()
+                ->from('guess_match_info')
+                ->where('fixture',$fixture);
+            $query = $this->db->get();
+            foreach($query->result() as $re)
+            {
+                if(($re->home_id == $this->get_team_by_name($home_name)->id) && ($re->away_id == $this->get_team_by_name($away_name)->id))
+                    return $re;
+            }
+            return FALSE;
+
         }
 
         public function match_is_exist($tm_match_id)
@@ -163,18 +301,6 @@
             return count($query->result());
         }
 
-        //通过tmid获取球队信息
-        public function get_team($tm_id)
-        {
-            $query = $this->db->where('tm_id', $tm_id)
-                ->get('guess_team_info');
-            $row = $query->row();
-            if(isset($row))
-            {
-                return $row;
-            }
-            return FALSE;
-        }
 
         //通过比赛id获取各个赔率
         public function get_odds($match_id)
@@ -183,5 +309,8 @@
                 ->get('guess_match_odds');
             return $query->result();
         }
+
+
+
 
     }

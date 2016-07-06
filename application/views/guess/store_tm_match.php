@@ -8,7 +8,7 @@
 
 <?php
 
-    echo form_open(base_url('guess/add'), 'class="form-horizontal" id="guess_add_form"');
+    echo form_open(base_url('guess/add_tm'), 'class="form-horizontal" id="guess_add_form"');
 ?>
 
 <div class="form-group">
