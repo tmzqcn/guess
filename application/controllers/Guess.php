@@ -9,7 +9,8 @@ class Guess extends CI_Controller
 
         //获取所有用户
         $this->load->model('guess_model');
-
+//载入表单辅助函数
+        $this->load->helper(array('form'));
         //分页函数
         $this->load->library('pagination');
 
