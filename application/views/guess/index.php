@@ -5,11 +5,22 @@
     }
     .progress
     {
-        padding-left: 10px;
-        padding-right: 10px;
+        margin-left: 10px;
+        margin-right: 10px;
     }
+    form
+    {
 
+    }
+    .radio-inline
+    {
+
+    }
 </style>
+
+<div class="form-group">
+    <?php echo validation_errors(); ?>
+</div>
 
 <?php
 foreach($match as $m)
@@ -43,10 +54,40 @@ foreach($match as $m)
 
     echo '</div>
     <div class="panel-body">';
-    echo '<div class="col-sm-4 text-center">' . $this->security->xss_clean($m->home_name) . '</div>';
-    echo '<div class="col-sm-1 text-center">VS</div>';
-    echo '<div class="col-sm-4 text-center">' . $this->security->xss_clean($m->away_name) . '</div>';
-    echo '<div class="col-sm-3 text-center">截止时间:' . date("m-d H:i", $this->security->xss_clean($m->deadline)) . '</div>';
+    echo '<div class="col-sm-4 text-center h3">' . $this->security->xss_clean($m->home_name) . '</div>';
+    echo '<div class="col-sm-1 text-center h3">VS</div>';
+    echo '<div class="col-sm-4 text-center h3">' . $this->security->xss_clean($m->away_name) . '</div>';
+    echo '<div class="col-sm-3 text-center h3"><small>截止时间:' . date("m-d H:i", $this->security->xss_clean($m->deadline)) . '</small></div>';
+
+    echo form_open(base_url('guess/bet'), 'class="form-horizontal" id="guess_bet"');
+
+    echo'
+    <div class="col-sm-9 text-center">
+        <label class="radio-inline">
+          <input type="radio" name="radio" id="win" value="win"> 主胜
+        </label>
+        <label class="radio-inline">
+          <input type="radio" name="radio" id="draw" value="draw"> 平局
+        </label>
+        <label class="radio-inline">
+          <input type="radio" name="radio" id="fail" value="fail"> 客胜
+        </label>
+    </div>
+    <div class="col-sm-2">
+        <label class="sr-only" for="exampleInputAmount">Amount (in dollars)</label>
+        <div class="input-group">
+          <div class="input-group-addon">$</div>
+          <input type="text" class="form-control " id="exampleInputAmount" placeholder="TM币">
+
+        </div>
+
+    </div>
+    <div class="col-sm-1">
+        <button type="submit" class=" btn btn-primary">竞猜</button>
+    </div>
+
+
+    </form>';
 
 
     echo '
@@ -65,15 +106,7 @@ foreach($match as $m)
 
 
 
-    echo form_open(base_url('guess/bet'), 'class="form-horizontal" id="guess_bet"');
-    echo'
-    <div>
-    <input type="radio" name="score" value="主队胜"/>主队胜
-    <input type="radio" name="score" value="平局"/>平局
-    <input type="radio" name="score" value="客队胜"/>客队胜
-    </div>
-    </form>
-    ';
+
     echo'</div>';
 
 }
@@ -94,5 +127,6 @@ echo $this->pagination->create_links();
             $(".progress", this).fadeOut("slow");
             $("form", this).fadeOut("slow");
         });
+
     })
 </script>

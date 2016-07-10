@@ -27,6 +27,7 @@ echo form_open(base_url('user/login'), 'class="form-horizontal" id="user_login_f
 <div class="form-group">
     <div class="col-sm-offset-2 col-sm-10">
         <button type="submit" class="btn btn-default">登录</button>
+        <button id="register" class="btn btn-default">注册</button>
     </div>
 </div>
 <div class="form-group">
@@ -47,6 +48,10 @@ echo form_open(base_url('user/login'), 'class="form-horizontal" id="user_login_f
 <script>
     $(document).ready(function(){
         $("#user_login_form").validationEngine();
+        $('#register').click(function(){
+
+            window.location.assign('http://'+location.hostname+'/guess/user/register');
+        })
     });
 </script>
 

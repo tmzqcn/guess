@@ -9,7 +9,7 @@ class Guess extends CI_Controller
 
         //获取所有用户
         $this->load->model('guess_model');
-//载入表单辅助函数
+        //载入表单辅助函数
         $this->load->helper(array('form'));
         //分页函数
         $this->load->library('pagination');
@@ -181,7 +181,7 @@ class Guess extends CI_Controller
                     $data['message'] = '添加比赛成功！';
                     $data['url'] = 'guess/index';
                     $this->load->view('inc/header');
-                    $this->load->view('inc/success',$data);
+                    $this->load->view('inc/done',$data);
                     $this->load->view('inc/footer');
                 }
                 else
@@ -274,7 +274,7 @@ class Guess extends CI_Controller
                     $data['message'] = '添加比赛成功！';
                     $data['url'] = 'guess/index';
                     $this->load->view('inc/header');
-                    $this->load->view('inc/success',$data);
+                    $this->load->view('inc/done',$data);
                     $this->load->view('inc/footer');
                 }
                 else
@@ -294,6 +294,21 @@ class Guess extends CI_Controller
         }
     }
 
+    /*
+     * 竞猜提交
+     * ajax
+     */
+    public function bet()
+    {
+        if($this->verify->authorize_by_role('role_user',$this->session->roles))
+        {
+
+        }
+        else
+        {
+
+        }
+    }
 
     //删除比赛
     public function delete()

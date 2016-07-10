@@ -14,7 +14,19 @@
         <!-- Collect the nav links, forms, and other content for toggling -->
         <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
             <ul class="nav navbar-nav">
-                <li ><a href="#">Link</a></li>
+                <li ><a href="#">
+                    <?php
+                    //载入模型
+                    $this->CI =& get_instance();
+                    $this->CI->load->model('guess_model');
+                    if(isset($this->session->user_id))
+                    {
+                        echo 'TM币：'.$this->CI->guess_model->get_point($this->session->user_id)->point;
+                    }
+
+
+                    ?>
+                    </a></li>
                 <li><a href="#">Link</a></li>
             </ul>
 

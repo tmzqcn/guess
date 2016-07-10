@@ -32,16 +32,21 @@
         //成功返回True,失败记录log,返回False
         public function store($user_obj)
         {
-            //$this->db->trans_start();
+            $this->db->trans_start();
             if($this->db->insert('guess_user', $user_obj))
+            {
+                $user_id = $this->get_user_info($user_obj->email)->id;
+                $this->db->insert('guess_user_point',array('user_id'=>$user_id,'point'=>100));
+                $this->db->trans_complete();
                 return TRUE;
+            }
             else
             {
                 log_message('error',$this->db->error());
                 return FALSE;
             }
 
-            //$this->db->trans_complete();
+            //
         }
 
         //判断邮箱和密码是否匹配

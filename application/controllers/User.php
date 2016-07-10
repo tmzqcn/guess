@@ -84,7 +84,7 @@ class User extends CI_Controller
                 $data['message'] = '注册成功！';
                 $data['url'] = 'user/login';
                 $this->load->view('inc/header');
-                $this->load->view('inc/success',$data);
+                $this->load->view('inc/done',$data);
                 $this->load->view('inc/footer');
             }
             else
@@ -152,9 +152,11 @@ class User extends CI_Controller
                     {
                         $email = $this->security->xss_clean($user_obj->email);
                         $name = $this->security->xss_clean($user_obj->name);
+                        $user_id = $this->security->xss_clean($user_obj->id);
                         //roles字符串转换成数组
                         $roles = explode("|",$user_obj->roles);
                         $user_data = array(
+                            'user_id'=>$user_id,
                             'email'  => $email,
                             'name' => $name,
                             'roles' => $roles

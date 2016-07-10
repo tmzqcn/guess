@@ -311,6 +311,20 @@
         }
 
 
-
+        /*
+         * 获取用户积分
+         *
+         */
+        public function get_point($user_id)
+        {
+            $query = $this->db->where('user_id', $user_id)
+                ->get('guess_user_point');
+            $row = $query->row();
+            if(isset($row))
+            {
+                return $row;
+            }
+            return FALSE;
+        }
 
     }
