@@ -59,7 +59,7 @@ foreach($match as $m)
     echo '<div class="col-sm-4 text-center h3">' . $this->security->xss_clean($m->away_name) . '</div>';
     echo '<div class="col-sm-3 text-center h3"><small>截止时间:' . date("m-d H:i", $this->security->xss_clean($m->deadline)) . '</small></div>';
 
-    echo form_open();
+    echo form_open(base_url('guess/bet'), 'class="form-horizontal" id="guess_bet"');
 
     echo'
     <div class="col-sm-9 text-center">
@@ -136,15 +136,16 @@ echo $this->pagination->create_links();
                 url: "guess/bet",
                 method: "POST",
                 data:{
-                    '<?php echo $this->security->get_csrf_token_name(); ?>' : '<?php echo $this->security->get_csrf_hash(); ?>'
+                    '<?php echo $this->security->get_csrf_token_name(); ?>' : $( "input[name$='<?php echo $this->security->get_csrf_token_name(); ?>']" ).val()
                 },
                 dataType: "json",
                 complete: function(msg){
+
                     $btn.button('reset');
                 },
                 success:function(data)
                 {
-
+                    $( "input[name$='<?php echo $this->security->get_csrf_token_name(); ?>']" ).val(data.csrf_test_name);
 
                 }
             })
