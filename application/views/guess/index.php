@@ -59,31 +59,31 @@ foreach($match as $m)
     echo '<div class="col-sm-4 text-center h3">' . $this->security->xss_clean($m->away_name) . '</div>';
     echo '<div class="col-sm-3 text-center h3"><small>截止时间:' . date("m-d H:i", $this->security->xss_clean($m->deadline)) . '</small></div>';
 
-    echo form_open(base_url('guess/bet'), 'class="form-horizontal" id="guess_bet"');
+    echo form_open();
 
     echo'
     <div class="col-sm-9 text-center">
         <label class="radio-inline">
-          <input type="radio" name="radio" id="win" value="win"> 主胜
+          <input type="radio" name="radio_'.$m->id.'" id="win_'.$m->id.'" value="win"> 主胜
         </label>
         <label class="radio-inline">
-          <input type="radio" name="radio" id="draw" value="draw"> 平局
+          <input type="radio" name="radio_'.$m->id.'" id="draw_'.$m->id.'" value="draw"> 平局
         </label>
         <label class="radio-inline">
-          <input type="radio" name="radio" id="fail" value="fail"> 客胜
+          <input type="radio" name="radio_'.$m->id.'" id="fail_'.$m->id.'" value="fail"> 客胜
         </label>
     </div>
     <div class="col-sm-2">
-        <label class="sr-only" for="exampleInputAmount">Amount (in dollars)</label>
+        <label class="sr-only" for="bet_input_'.$m->id.'">Amount (in dollars)</label>
         <div class="input-group">
           <div class="input-group-addon">$</div>
-          <input type="text" class="form-control " id="exampleInputAmount" placeholder="TM币">
+          <input type="text" class="form-control "name="bet_input_'.$m->id.'" id="bet_input_'.$m->id.'" placeholder="TM币">
 
         </div>
 
     </div>
     <div class="col-sm-1">
-        <button type="submit" class=" btn btn-primary">竞猜</button>
+        <button id="bet_'.$m->id.'" class=" btn btn-primary">竞猜</button>
     </div>
 
 
@@ -118,15 +118,39 @@ echo $this->pagination->create_links();
 
         $(".progress").hide();
         $("form").hide();
-        $(".panel").mouseenter(function(){
-
+        $(".panel").mouseenter(function()
+        {
             $(".progress", this).fadeIn("slow");
             $("form", this).fadeIn("slow");
         });
-        $(".panel").mouseleave(function(){
+        $(".panel").mouseleave(function()
+        {
             $(".progress", this).fadeOut("slow");
             $("form", this).fadeOut("slow");
         });
+
+        $('button').on('click', function (e)
+        {
+            var $btn = $(this).button('loading');
+            $.ajax({
+                url: "guess/bet",
+                method: "POST",
+                data:{
+                    '<?php echo $this->security->get_csrf_token_name(); ?>' : '<?php echo $this->security->get_csrf_hash(); ?>'
+                },
+                dataType: "json",
+                complete: function(msg){
+                    $btn.button('reset');
+                },
+                success:function(data)
+                {
+
+
+                }
+            })
+
+            e.preventDefault();
+        })
 
     })
 </script>
