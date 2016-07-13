@@ -300,15 +300,23 @@ class Guess extends CI_Controller
      */
     public function bet()
     {
+
+        $arr = array();
         if($this->verify->authorize_by_role('role_user',$this->session->roles))
         {
-            $arr = array($this->security->get_csrf_token_name() => $this->security->get_csrf_hash(), 'b' => 2, 'c' => 3, 'd' => 4, 'e' => 5);
-            echo json_encode( $arr );
+            $arr['4'] = 5;
+
         }
         else
         {
+            $arr['msg'] =  '请先登陆系统,再竞猜比赛.';
 
         }
+        $arr[$this->security->get_csrf_token_name()] = $this->security->get_csrf_hash();
+
+
+        echo json_encode( $arr );
+
     }
 
     //删除比赛

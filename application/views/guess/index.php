@@ -133,7 +133,7 @@ echo $this->pagination->create_links();
         {
             var $btn = $(this).button('loading');
             $.ajax({
-                url: "guess/bet",
+                url: "<?php echo base_url('guess/bet') ?>",
                 method: "POST",
                 data:{
                     '<?php echo $this->security->get_csrf_token_name(); ?>' : $( "input[name$='<?php echo $this->security->get_csrf_token_name(); ?>']" ).val()
