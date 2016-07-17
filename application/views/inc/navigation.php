@@ -8,7 +8,7 @@
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
             </button>
-            <a class="navbar-brand" href="#">竞猜</a>
+            <a class="navbar-brand" href="<?php echo base_url(); ?>">竞猜</a>
         </div>
 
         <!-- Collect the nav links, forms, and other content for toggling -->
@@ -21,7 +21,7 @@
                     $this->CI->load->model('guess_model');
                     if(isset($this->session->user_id))
                     {
-                        echo 'TM币：'.$this->CI->guess_model->get_point($this->session->user_id)->point;
+                        echo 'TM币：<span id="tm_point">'.$this->CI->guess_model->get_point($this->session->user_id)->point.'</span>';
                     }
 
 

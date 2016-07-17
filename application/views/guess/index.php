@@ -61,6 +61,8 @@ foreach($match as $m)
 
     echo form_open(base_url('guess/bet'), 'class="form-horizontal" id="guess_bet"');
 
+
+
     echo'
     <div class="col-sm-9 text-center">
         <label class="radio-inline">
@@ -78,6 +80,7 @@ foreach($match as $m)
         <div class="input-group">
           <div class="input-group-addon">$</div>
           <input type="text" class="form-control "name="bet_input_'.$m->id.'" id="bet_input_'.$m->id.'" placeholder="TM币">
+          <input type="hidden" value="'.$m->id.'">
 
         </div>
 
@@ -93,14 +96,14 @@ foreach($match as $m)
     echo '
     </div>
     <div class="progress">
-        <div class="progress-bar " style="width: 5%" style="min-width: 2em;">
-            5% Complete (success)
+        <div class="progress-bar " style="width: 1%" style="min-width: 4em;">
+            1% Complete (success)
         </div>
-        <div class="progress-bar progress-bar-warning  " style="width: 80%" style="min-width: 2em;">
-            80% Complete (warning)
+        <div class="progress-bar progress-bar-warning  " style="width: 79%" style="min-width: 4em;">
+            79% Complete (warning)
         </div>
-        <div class="progress-bar progress-bar-danger " style="width: 15%" style="min-width: 2em;">
-            15% Complete (danger)
+        <div class="progress-bar progress-bar-danger " style="width: 19%" style="min-width: 4em;">
+            19% Complete (danger)
         </div>
     </div>';
 
@@ -118,6 +121,8 @@ echo $this->pagination->create_links();
 
         $(".progress").hide();
         $("form").hide();
+
+        //鼠标进入panel展开，鼠标离开隐藏
         $(".panel").mouseenter(function()
         {
             $(".progress", this).fadeIn("slow");
@@ -131,25 +136,67 @@ echo $this->pagination->create_links();
 
         $('button').on('click', function (e)
         {
-            var $btn = $(this).button('loading');
-            $.ajax({
-                url: "<?php echo base_url('guess/bet') ?>",
-                method: "POST",
-                data:{
-                    '<?php echo $this->security->get_csrf_token_name(); ?>' : $( "input[name$='<?php echo $this->security->get_csrf_token_name(); ?>']" ).val()
-                },
-                dataType: "json",
-                complete: function(msg){
+            //错误信息初始化
+            var err = '';
+            var money = $(this).parent().prev();
+            var radio = money.prev();
+            var uid = $(':hidden',money).val();
+            var n = parseInt($(':text',money).val());
 
-                    $btn.button('reset');
-                },
-                success:function(data)
-                {
-                    $( "input[name$='<?php echo $this->security->get_csrf_token_name(); ?>']" ).val(data.csrf_test_name);
+            //判断是否选择结构
+            if(!$(':checked',radio).val())
+            {
+                err += '请选择竞猜胜负结果.';
+            }
 
-                }
-            })
+            //判断是否输入数值
+            if(!n)
+            {
+                err += '请输入竞猜积分数(正整数).';
+            }
 
+            //判断输入数值是否大于总数
+            if(n>$('#tm_point').html())
+            {
+                err += 'TM币不足.'
+            }
+
+            if(err == '')
+            {
+                //按钮变为loading，不可点击
+                var $btn = $(this).button('loading');
+                $.ajax({
+                    url: "<?php echo base_url('guess/bet') ?>",
+                    method: "POST",
+                    data:{
+                        '<?php echo $this->security->get_csrf_token_name(); ?>' : $( "input[name$='<?php echo $this->security->get_csrf_token_name(); ?>']" ).val(),
+                        'score':$(':checked',radio).val(),
+                        'point':n,
+                        'match_id':uid
+
+                    },
+                    dataType: "json",
+                    complete: function(msg){
+                        //ajax结束后输入数值清空，按钮恢复
+                        $(':text',money).val('');
+                        $btn.button('reset');
+                    },
+                    success:function(data)
+                    {
+                        //更新csrf token
+                        $( "input[name$='<?php echo $this->security->get_csrf_token_name(); ?>']" ).val(data.csrf_test_name);
+                        if(data.state == 200)
+                            $('#tm_point').html($('#tm_point').html()-n);
+                        alert(data.msg);
+                    }
+                })
+            }
+            else
+            {
+                alert(err);
+            }
+
+            //点击按钮不跳转
             e.preventDefault();
         })
 

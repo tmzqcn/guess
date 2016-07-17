@@ -327,4 +327,90 @@
             return FALSE;
         }
 
+        /*
+         * 用户添加竞猜记录
+         *
+         */
+        public function add_guess_info($match_id,$result,$point,$user_id)
+        {
+            if($result == 'win')
+                $result = '1';
+            if($result == 'draw')
+                $result = '0';
+            if($result == 'fail')
+                $result = '-1';
+
+            $data = array(
+                'user_id' => $user_id,
+                'match_id' => $match_id,
+                'score' => $result,
+                'point' => $point,
+                'guess_result' => 0
+            );
+            $this->db->insert('guess_guess_info', $data);
+        }
+
+
+        /*
+         * 从user_id用户扣除point
+         *
+         */
+        public function reduce_point($user_id,$point)
+        {
+            $p = $this->get_point($user_id)->point - $point;
+
+            $data = array(
+                'point' => $p
+            );
+            $this->db->where('user_id',$user_id);
+            $this->db->update('guess_user_point', $data);
+        }
+
+        /*
+         * 用户竞猜投注
+         *
+         */
+        public function guess_bet($match_id,$result,$point,$user_id)
+        {
+            $this->db->trans_start();
+            $this->add_guess_info($match_id,$result,$point,$user_id);
+            $this->reduce_point($user_id,$point);
+
+            $this->db->trans_complete();
+        }
+
+        /*
+         *
+         *
+         */
+        public function get_bet_ratio($match_id)
+        {
+            $this->db->select_sum('point');
+            $this->db->from('guess_guess_info');
+            $this->db->where('match_id',$match_id);
+            $this->db->where('score','1');
+            $win = $this->db->get()->row()->point;
+
+            $this->db->select_sum('point');
+            $this->db->from('guess_guess_info');
+            $this->db->where('match_id',$match_id);
+            $this->db->where('score','0');
+            $draw = $this->db->get()->row()->point;
+
+            $this->db->select_sum('point');
+            $this->db->from('guess_guess_info');
+            $this->db->where('match_id',$match_id);
+            $this->db->where('score','-1');
+            $fail = $this->db->get()->row()->point;
+
+            $arr = array();
+            $s = $win+$draw+$fail;
+            $arr['win'] = round(100*$win/$s ,2);
+            $arr['draw'] = round(100*$draw/$s ,2);
+            $arr['fail'] = round(100*$fail/$s ,2);
+
+            return $arr;
+
+        }
+
     }

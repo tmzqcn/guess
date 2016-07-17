@@ -302,14 +302,52 @@ class Guess extends CI_Controller
     {
 
         $arr = array();
+        $arr['msg'] = '';
         if($this->verify->authorize_by_role('role_user',$this->session->roles))
         {
-            $arr['4'] = 5;
+            $match_id = html_escape($this->input->post('match_id'));
+            $result = html_escape($this->input->post('score'));
+            $point = html_escape($this->input->post('point'));
 
+            if($point == 'NaN')
+                $point = -1;
+            else
+            {
+                if($point>0)
+                    $point = intval($point);
+            }
+
+
+            $arr['point'] = $point;
+            $user_id = $this->session->user_id;
+            //载入模型
+            $this->load->model('guess_model');
+            $p = $this->guess_model->get_point($user_id)->point;
+            if($user_id&&$p>=$point&&$result&&$match_id&&is_int($point)&&$point>0)
+            {
+                $this->guess_model->guess_bet($match_id,$result,$point,$user_id);
+                $arr['msg'] = '竞猜成功！TM币扣除'.$point;
+                $arr['state'] = 200;
+            }
+            else
+            {
+                if(!$result)
+                    $arr['msg'] .=  '请选择竞猜结果.';
+                if($point<0)
+                    $arr['msg'] .=  '请输入有效TM币数值.';
+                if($p<$point)
+                    $arr['msg'] .=  'TM币余额不足.';
+                if(!is_int($point))
+                    $arr['msg'] .=  'TM币数值必须为正整数.';
+                if(!$match_id)
+                    $arr['msg'] .=  '未获取到比赛ID！';
+                $arr['state'] = 500;
+
+            }
         }
         else
         {
-            $arr['msg'] =  '请先登陆系统,再竞猜比赛.';
+            $arr['msg'] .=  '请先登陆系统.';
 
         }
         $arr[$this->security->get_csrf_token_name()] = $this->security->get_csrf_hash();
@@ -325,6 +363,10 @@ class Guess extends CI_Controller
         if($this->verify->authorize_by_role('role_guess_admin',$this->session->roles))
         {
 
+            //载入模型
+            $this->load->model('guess_model');
+            $tmp = $this->guess_model->get_bet_ratio(8);
+            var_dump($tmp);
         }
         else
         {

@@ -526,3 +526,9 @@ $config['salt'] = '$6$rounds=5000$usesomesillystringforyan2$';
 $config['role_user_admin'] = array('role_user');
 $config['role_guess_admin'] = array('role_user');
 $config['role_super_admin'] = array('role_user_admin','role_guess_admin');
+
+
+/*
+ * tax
+ */
+$config['guess_tax'] = 0.1;
