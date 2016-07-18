@@ -27,9 +27,18 @@ class Guess extends CI_Controller
         {
             $home_info = $this->guess_model->get_team_by_id($match->home_id);
             $away_info = $this->guess_model->get_team_by_id($match->away_id);
+
+            $ratio = $this->guess_model->get_bet_ratio($match->id);
+
+
             //把球队名称插入结果集
             $data['match'][$match_num]->home_name = $home_info->team_name;
             $data['match'][$match_num]->away_name = $away_info->team_name;
+
+            $data['match'][$match_num]->win = $ratio['win'];
+            $data['match'][$match_num]->fail = $ratio['fail'];
+            $data['match'][$match_num]->draw = $ratio['draw'];
+
             //把赔率插入结果集
             $odds_info = $this->guess_model->get_odds($match->id);
             foreach($odds_info as $odds)

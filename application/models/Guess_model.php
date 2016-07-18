@@ -405,9 +405,19 @@
 
             $arr = array();
             $s = $win+$draw+$fail;
-            $arr['win'] = round(100*$win/$s ,2);
-            $arr['draw'] = round(100*$draw/$s ,2);
-            $arr['fail'] = round(100*$fail/$s ,2);
+            if($s == 0)
+            {
+                $arr['win'] = 0;
+                $arr['draw'] = 0;
+                $arr['fail'] = 0;
+            }
+            else
+            {
+                $arr['win'] = round(100*$win/$s ,1);
+                $arr['draw'] = round(100*$draw/$s ,1);
+                $arr['fail'] = round(100*$fail/$s ,1);
+            }
+
 
             return $arr;
 

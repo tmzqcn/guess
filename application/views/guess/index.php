@@ -92,18 +92,45 @@ foreach($match as $m)
 
     </form>';
 
+    $win_width = $m->win;
+    $draw_width = $m->draw;
+    $fail_width = $m->fail;
+
+    if($m->win==0&&$m->draw==0&&$m->fail==0)
+    {
+        $win_width=33.3;
+        $draw_width=33.3;
+        $fail_width=33.3;
+    }
+
+
+    if($win_width<10)
+        $win_width = 10;
+    if($draw_width<10)
+        $draw_width = 10;
+    if($fail_width<10)
+        $fail_width = 10;
+
+
+    $sum = $win_width+$draw_width+$fail_width;
+
+    $win_width = round(100*$win_width/$sum ,4);
+    $draw_width = round(100*$draw_width/$sum ,4);
+    $fail_width = round(100*$fail_width/$sum ,4);
+
+
 
     echo '
     </div>
     <div class="progress">
-        <div class="progress-bar " style="width: 1%" style="min-width: 4em;">
-            1% Complete (success)
+        <div class="progress-bar " style="width: '.$win_width.'%" style="min-width: 4em;">
+             '.$m->win.'%
         </div>
-        <div class="progress-bar progress-bar-warning  " style="width: 79%" style="min-width: 4em;">
-            79% Complete (warning)
+        <div class="progress-bar progress-bar-warning  " style="width: '.$draw_width.'%" style="min-width: 4em;">
+             '.$m->draw.'%
         </div>
-        <div class="progress-bar progress-bar-danger " style="width: 19%" style="min-width: 4em;">
-            19% Complete (danger)
+        <div class="progress-bar progress-bar-danger " style="width:  '.$fail_width.'%" style="min-width: 4em;">
+             '.$m->fail.'%
         </div>
     </div>';
 
