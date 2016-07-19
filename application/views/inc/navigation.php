@@ -42,9 +42,9 @@
                             <ul class="dropdown-menu">
                                 <li><a href="<?php echo base_url('guess/add_tm'); ?>">添加TM比赛</a></li>
                                 <li><a href="<?php echo base_url('guess/add'); ?>">添加其他比赛</a></li>
-                                <li><a href="#">Something else here</a></li>
+
                                 <li role="separator" class="divider"></li>
-                                <li><a href="#">Separated link</a></li>
+                                <li><a href="#">比赛结果录入</a></li>
                             </ul>
                         </li>
                 <?php

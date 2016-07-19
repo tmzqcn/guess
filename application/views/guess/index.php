@@ -40,7 +40,7 @@ foreach($match as $m)
 
     if (date("i", $this->security->xss_clean($m->fixture)) == 59)
     {
-        echo date("Y-m-d H:i", $this->security->xss_clean($m->fixture + 60)) . '</span>';
+        echo date("Y-m-d H:i", $this->security->xss_clean($m->fixture + 59)) . '</span>';
     }
     else
     {
@@ -59,27 +59,27 @@ foreach($match as $m)
     echo '<div class="col-sm-4 text-center h3">' . $this->security->xss_clean($m->away_name) . '</div>';
     echo '<div class="col-sm-3 text-center h3"><small>截止时间:' . date("m-d H:i", $this->security->xss_clean($m->deadline)) . '</small></div>';
 
-    echo form_open(base_url('guess/bet'), 'class="form-horizontal" id="guess_bet"');
+    echo form_open(base_url('guess/bet'), 'class="form-horizontal"');
 
 
 
     echo'
     <div class="col-sm-9 text-center">
         <label class="radio-inline">
-          <input type="radio" name="radio_'.$m->id.'" id="win_'.$m->id.'" value="win"> 主胜
+          <input type="radio" name="radio_'.$m->id.'" id="win_'.$m->id.'" value="win"> 主胜（赔率1：'.round($m->win_odds ,2).'）
         </label>
         <label class="radio-inline">
-          <input type="radio" name="radio_'.$m->id.'" id="draw_'.$m->id.'" value="draw"> 平局
+          <input type="radio" name="radio_'.$m->id.'" id="draw_'.$m->id.'" value="draw"> 平局（赔率1：'.round($m->draw_odds ,2).'）
         </label>
         <label class="radio-inline">
-          <input type="radio" name="radio_'.$m->id.'" id="fail_'.$m->id.'" value="fail"> 客胜
+          <input type="radio" name="radio_'.$m->id.'" id="fail_'.$m->id.'" value="fail"> 客胜（赔率1：'.round($m->fail_odds ,2).'）
         </label>
     </div>
     <div class="col-sm-2">
         <label class="sr-only" for="bet_input_'.$m->id.'">Amount (in dollars)</label>
         <div class="input-group">
           <div class="input-group-addon">$</div>
-          <input type="text" class="form-control "name="bet_input_'.$m->id.'" id="bet_input_'.$m->id.'" placeholder="TM币">
+          <input type="text" class="form-control " name="bet_input_'.$m->id.'" id="bet_input_'.$m->id.'" placeholder="TM币">
           <input type="hidden" value="'.$m->id.'">
 
         </div>
@@ -92,10 +92,12 @@ foreach($match as $m)
 
     </form>';
 
+    //3部分宽度
     $win_width = $m->win;
     $draw_width = $m->draw;
     $fail_width = $m->fail;
 
+    //如果都为0则平均分
     if($m->win==0&&$m->draw==0&&$m->fail==0)
     {
         $win_width=33.3;
@@ -104,14 +106,16 @@ foreach($match as $m)
     }
 
 
-    if($win_width<10)
-        $win_width = 10;
-    if($draw_width<10)
-        $draw_width = 10;
-    if($fail_width<10)
-        $fail_width = 10;
+    //不足5，按5的宽度计算
+    if($win_width<5)
+        $win_width = 5;
+    if($draw_width<5)
+        $draw_width = 5;
+    if($fail_width<5)
+        $fail_width = 5;
 
 
+    //所有部分平均计算宽度
     $sum = $win_width+$draw_width+$fail_width;
 
     $win_width = round(100*$win_width/$sum ,4);
@@ -123,14 +127,14 @@ foreach($match as $m)
     echo '
     </div>
     <div class="progress">
-        <div class="progress-bar " style="width: '.$win_width.'%" style="min-width: 4em;">
-             '.$m->win.'%
+        <div class="progress-bar " style="width: '.$win_width.'%" >
+             '.$m->win.'% 赢
         </div>
-        <div class="progress-bar progress-bar-warning  " style="width: '.$draw_width.'%" style="min-width: 4em;">
-             '.$m->draw.'%
+        <div class="progress-bar progress-bar-warning  " style="width: '.$draw_width.'%" >
+             '.$m->draw.'% 平
         </div>
-        <div class="progress-bar progress-bar-danger " style="width:  '.$fail_width.'%" style="min-width: 4em;">
-             '.$m->fail.'%
+        <div class="progress-bar progress-bar-danger " style="width:  '.$fail_width.'%" >
+             '.$m->fail.'% 负
         </div>
     </div>';
 

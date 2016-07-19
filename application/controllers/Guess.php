@@ -44,9 +44,16 @@ class Guess extends CI_Controller
             foreach($odds_info as $odds)
             {
                 $s = $odds->score;
+                if($s == '1')
+                    $s = 'win_odds';
+                if($s == '0')
+                    $s = 'draw_odds';
+                if($s == '-1')
+                    $s = 'fail_odds';
                 $data['match'][$match_num]->$s = $odds->odds;
             }
 
+            //var_dump($data['match'][$match_num]);
 
             $match_num++;
         }
