@@ -6,39 +6,28 @@ class Guess extends CI_Controller
     //
     public function index()
     {
-
         //获取所有用户
         $this->load->model('guess_model');
         //载入表单辅助函数
         $this->load->helper(array('form'));
         //分页函数
         $this->load->library('pagination');
-
         //要使用分页的目标url
         $config['base_url'] = base_url('guess/index');
-
         $this->config->load('pagination.php');
-
-
         $data['match'] = $this->guess_model->get_match($this->uri->segment(3, 1),$this->config->item('per_page'));
-
         $match_num = 0;
         foreach ($data['match'] as $match)
         {
             $home_info = $this->guess_model->get_team_by_id($match->home_id);
             $away_info = $this->guess_model->get_team_by_id($match->away_id);
-
             $ratio = $this->guess_model->get_bet_ratio($match->id);
-
-
             //把球队名称插入结果集
             $data['match'][$match_num]->home_name = $home_info->team_name;
             $data['match'][$match_num]->away_name = $away_info->team_name;
-
             $data['match'][$match_num]->win = $ratio['win'];
             $data['match'][$match_num]->fail = $ratio['fail'];
             $data['match'][$match_num]->draw = $ratio['draw'];
-
             //把赔率插入结果集
             $odds_info = $this->guess_model->get_odds($match->id);
             foreach($odds_info as $odds)
@@ -52,26 +41,50 @@ class Guess extends CI_Controller
                     $s = 'fail_odds';
                 $data['match'][$match_num]->$s = $odds->odds;
             }
-
             //var_dump($data['match'][$match_num]);
+            $match_num++;
+        }
+        //数据总数
+        $config['total_rows'] = $this->guess_model->get_match_num();
+        $this->pagination->initialize($config);
+        $this->load->view('inc/header');
+        $this->load->view('guess/index',$data);
+        $this->load->view('inc/footer');
+    }
+
+    /*
+     * 比赛管理页面
+     */
+    public function admin()
+    {
+        //获取所有用户
+        $this->load->model('guess_model');
+        //载入表单辅助函数
+        $this->load->helper(array('form'));
+        //分页函数
+        $this->load->library('pagination');
+        //要使用分页的目标url
+        $config['base_url'] = base_url('guess/index');
+        $this->config->load('pagination.php');
+        $data['match'] = $this->guess_model->get_match($this->uri->segment(3, 1),$this->config->item('per_page'));
+        $match_num = 0;
+        foreach ($data['match'] as $match)
+        {
+            $home_info = $this->guess_model->get_team_by_id($match->home_id);
+            $away_info = $this->guess_model->get_team_by_id($match->away_id);
+
+            //把球队名称插入结果集
+            $data['match'][$match_num]->home_name = $home_info->team_name;
+            $data['match'][$match_num]->away_name = $away_info->team_name;
 
             $match_num++;
         }
-
-
-
         //数据总数
         $config['total_rows'] = $this->guess_model->get_match_num();
-
         $this->pagination->initialize($config);
-
-
         $this->load->view('inc/header');
-
-
-        $this->load->view('guess/index',$data);
+        $this->load->view('guess/admin_index',$data);
         $this->load->view('inc/footer');
-
     }
 
     //获取比赛信息
@@ -82,7 +95,6 @@ class Guess extends CI_Controller
         {
             return FALSE;
         }
-
         $this->config->load('tm_account.php');
         //设置post的数据
         $post = array (
@@ -96,7 +108,6 @@ class Guess extends CI_Controller
         $cookie = dirname(__FILE__) . '/cookie.txt';
         //登录后要获取信息的地址
         $url2 = "http://trophymanager.com/ajax/match.ajax.php?id=".$match_id;
-
         //模拟登录
         $login = $this->login_post($url, $cookie, $post);
         //获取登录页的信息
@@ -180,7 +191,6 @@ class Guess extends CI_Controller
 
             if ($this->form_validation->run() == FALSE)
             {
-
                 $this->load->view('inc/header');
                 $this->load->view('guess/store_tm_match');
                 $this->load->view('inc/footer');
@@ -234,6 +244,87 @@ class Guess extends CI_Controller
             $this->form_validation->set_rules('home_odds','主队赢赔率','trim|required|numeric|max_length[8]|greater_than[1]');
             $this->form_validation->set_rules('away_odds','客队赢赔率','trim|required|numeric|max_length[8]|greater_than[1]');
             $this->form_validation->set_rules('draw_odds','平局赔率','trim|required|numeric|max_length[8]|greater_than[1]');
+            $this->form_validation->set_rules('deadline','截至时间',
+                array(
+                    'trim',
+                    'required',
+                    array(
+                        'deadline_callable',
+                        function($str)
+                        {
+                            // Check validity of $str and return TRUE or FALSE
+                            if(strtotime($str)>strtotime($this->input->post('fixture')))
+                            {
+                                return FALSE;
+                            }
+                            else
+                            {
+                                return TRUE;
+                            }
+                        }
+                    )
+                ));
+            //自定义错误提示
+            $this->form_validation->set_message('min_length', '{field}必须至少{param}位.');
+            $this->form_validation->set_message('max_length', '{field}不得超过{param}位.');
+            $this->form_validation->set_message('greater_than', '{field}必须大于{param}.');
+            $this->form_validation->set_message('deadline_callable', '截至时间必须早于比赛时间.');
+
+            if ($this->form_validation->run() == FALSE)
+            {
+                $this->load->view('inc/header');
+                $this->load->view('guess/store_match');
+                $this->load->view('inc/footer');
+            }
+            else
+            {
+                $home_name = html_escape($this->input->post('home_name'));
+                $away_name = html_escape($this->input->post('away_name'));
+                $home_odds = html_escape($this->input->post('home_odds'));
+                $away_odds = html_escape($this->input->post('away_odds'));
+                $draw_odds = html_escape($this->input->post('draw_odds'));
+                $deadline = strtotime(html_escape($this->input->post('deadline')));
+                $fixture = strtotime(html_escape($this->input->post('fixture')));
+                $store = $this->guess_model->store($home_name,$away_name,$fixture,$deadline,$home_odds,$away_odds,$draw_odds);
+                if($store === TRUE)
+                {
+                    $data['message'] = '添加比赛成功！';
+                    $data['url'] = 'guess/index';
+                    $this->load->view('inc/header');
+                    $this->load->view('inc/done',$data);
+                    $this->load->view('inc/footer');
+                }
+                else
+                {
+                    if($store === FALSE)
+                        show_error('比赛ID错误，添加失败',500);
+                    else
+                        show_error($store,500);
+                }
+            }
+        }
+        else
+        {
+            show_error('权限不足，无法访问此页',403);
+        }
+    }
+
+    /*
+     * 比赛结果提交
+     */
+    public function submit()
+    {
+        if($this->verify->authorize_by_role('role_guess_admin',$this->session->roles))
+        {
+            //载入表单辅助函数
+            $this->load->helper(array('form'));
+            //载入模型
+            $this->load->model('guess_model');
+            //载入表单验证
+            $this->load->library('form_validation');
+            //表单验证规则
+            $this->form_validation->set_rules('home_score','主队进球数','trim|required|min_length[1]|max_length[3]');
+            $this->form_validation->set_rules('away_score','客队进球数','trim|required|min_length[1]|max_length[3]');
 
             $this->form_validation->set_rules('deadline','截至时间',
                 array(
@@ -255,17 +346,13 @@ class Guess extends CI_Controller
                         }
                     )
                 ));
-
-
             //自定义错误提示
             $this->form_validation->set_message('min_length', '{field}必须至少{param}位.');
             $this->form_validation->set_message('max_length', '{field}不得超过{param}位.');
             $this->form_validation->set_message('greater_than', '{field}必须大于{param}.');
             $this->form_validation->set_message('deadline_callable', '截至时间必须早于比赛时间.');
-
             if ($this->form_validation->run() == FALSE)
             {
-
                 $this->load->view('inc/header');
                 $this->load->view('guess/store_match');
                 $this->load->view('inc/footer');
@@ -279,11 +366,6 @@ class Guess extends CI_Controller
                 $draw_odds = html_escape($this->input->post('draw_odds'));
                 $deadline = strtotime(html_escape($this->input->post('deadline')));
                 $fixture = strtotime(html_escape($this->input->post('fixture')));
-
-
-
-
-
                 $store = $this->guess_model->store($home_name,$away_name,$fixture,$deadline,$home_odds,$away_odds,$draw_odds);
                 if($store === TRUE)
                 {
@@ -300,8 +382,6 @@ class Guess extends CI_Controller
                     else
                         show_error($store,500);
                 }
-
-
             }
         }
         else
@@ -316,7 +396,6 @@ class Guess extends CI_Controller
      */
     public function bet()
     {
-
         $arr = array();
         $arr['msg'] = '';
         if($this->verify->authorize_by_role('role_user',$this->session->roles))
@@ -324,7 +403,6 @@ class Guess extends CI_Controller
             $match_id = html_escape($this->input->post('match_id'));
             $result = html_escape($this->input->post('score'));
             $point = html_escape($this->input->post('point'));
-
             if($point == 'NaN')
                 $point = -1;
             else
@@ -332,8 +410,6 @@ class Guess extends CI_Controller
                 if($point>0)
                     $point = intval($point);
             }
-
-
             $arr['point'] = $point;
             $user_id = $this->session->user_id;
             //载入模型
@@ -358,19 +434,14 @@ class Guess extends CI_Controller
                 if(!$match_id)
                     $arr['msg'] .=  '未获取到比赛ID！';
                 $arr['state'] = 500;
-
             }
         }
         else
         {
             $arr['msg'] .=  '请先登陆系统.';
-
         }
         $arr[$this->security->get_csrf_token_name()] = $this->security->get_csrf_hash();
-
-
         echo json_encode( $arr );
-
     }
 
     //删除比赛
@@ -378,7 +449,6 @@ class Guess extends CI_Controller
     {
         if($this->verify->authorize_by_role('role_guess_admin',$this->session->roles))
         {
-
             //载入模型
             $this->load->model('guess_model');
             $tmp = $this->guess_model->get_bet_ratio(8);
@@ -396,12 +466,10 @@ class Guess extends CI_Controller
     private function store_by_matchid($match_id,$home_odds,$away_odds,$draw_odds)
     {
         $match_info = $this->get_match_info($match_id);
-
         //$match_info['match_data']['live_min']存在表示比赛未开始，$match_info['club']['home']['club_name']存在表示比赛存在
         if($match_info !== FALSE && isset($match_info['match_data']['live_min']) && isset($match_info['club']['home']['club_name']))
         {
             //echo date('Y-m-d H:i',time()+abs($match_info['match_data']['live_min'])*60);
-
             //获取比赛开始时间戳
             $fixture = time()+abs($match_info['match_data']['live_min'])*60;
             //截至时间提前2h
@@ -410,7 +478,6 @@ class Guess extends CI_Controller
             $home_id = $match_info['club']['home']['id'];
             $away_name = $match_info['club']['away']['club_name'];
             $away_id = $match_info['club']['away']['id'];
-
             //载入模型
             $this->load->model('guess_model');
             if($this->guess_model->store_tm_match($match_id,$home_id,$home_name,$away_id,$away_name,$fixture,$deadline,$home_odds,$away_odds,$draw_odds))

@@ -44,7 +44,7 @@
                                 <li><a href="<?php echo base_url('guess/add'); ?>">添加其他比赛</a></li>
 
                                 <li role="separator" class="divider"></li>
-                                <li><a href="#">比赛结果录入</a></li>
+                                <li><a href="<?php echo base_url('guess/admin'); ?>">比赛管理</a></li>
                             </ul>
                         </li>
                 <?php
