@@ -99,14 +99,16 @@ echo $this->pagination->create_links();
                         $(':text',money).val('');
                         $btn.button('reset');
                     },
+                    */
                     success:function(data)
                     {
-
+                         //更新csrf token
+                         $( "input[name$='<?php echo $this->security->get_csrf_token_name(); ?>']" ).val(data.csrf_test_name);
                         if(data.state == 200)
-                            $('#tm_point').html($('#tm_point').html()-n);
+                            ;
                         alert(data.msg);
                     }
-                    */
+
                 })
             },
 
