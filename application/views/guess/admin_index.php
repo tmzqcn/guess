@@ -70,7 +70,7 @@ echo $this->pagination->create_links();
         $('a.result').confirm({
             title: function ()
             {
-                
+
             },
             content: '<input type="text" placeholder="主队进球数" name="home_score" id="home_score"/>' +
             '：' +
