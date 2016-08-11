@@ -72,9 +72,9 @@ echo $this->pagination->create_links();
             {
 
             },
-            content: '<input type="text" placeholder="主队进球数" name="home_score" id="home_score"/>' +
+            content: '<input type="text" placeholder="主队进球数" name="home_score" id="home_score" value="0"/>' +
             '：' +
-            '<input type="text" placeholder="客队进球数" name="away_score" id="away_score"/>',
+            '<input type="text" placeholder="客队进球数" name="away_score" id="away_score" value="0"/>',
             confirmButton: '上报比分',
             cancelButton: '取消',
             backgroundDismiss: true,

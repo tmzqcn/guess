@@ -324,25 +324,28 @@ class Guess extends CI_Controller
     {
         $arr = array();
         $arr['msg'] = '';
-        if($this->verify->authorize_by_role('role_user',$this->session->roles))
+        if($this->verify->authorize_by_role('role_guess_admin',$this->session->roles))
         {
-            $home_score = intval(html_escape($this->input->post('home_score')));
-            $away_score = intval(html_escape($this->input->post('away_score')));
+            $home_score = html_escape($this->input->post('home_score'));
+            $away_score = html_escape($this->input->post('away_score'));
+            if(!is_numeric($home_score)||$home_score < 0)
+            {
+                $arr['msg'] .= '主队比分必须为非负整数.';
+            }
+            if(!is_numeric($away_score)||$away_score < 0)
+            {
+                $arr['msg'] .= '客队比分必须为非负整数.';
+            }
+            //转换为int整数
+            $home_score = intval($home_score);
+            $away_score = intval($away_score);
 
-            if($home_score === 'NaN')
-                $home_score = 0;
-            if($away_score === 'NaN')
-                $away_score = 0;
-
-
-            $user_id = $this->session->user_id;
-            //载入模型
-            $this->load->model('guess_model');
-            $p = $this->guess_model->get_point($user_id)->point;
-            if(1)
+            if($arr['msg'] == '')
             {
                 $arr['msg'] = '竞猜成功！TM币扣除';
                 $arr['state'] = 200;
+                $arr['home_score'] = $home_score;
+                $arr['away_score'] = $away_score;
             }
             else
             {
