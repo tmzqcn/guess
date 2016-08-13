@@ -180,6 +180,68 @@ class User extends CI_Controller
         }
     }
 
+    /*
+     * 修改密码
+     *
+     */
+    public function change_password()
+    {
+        if($this->verify->authorize_by_role('role_user',$this->session->roles))
+        {
+            //载入表单辅助函数
+            $this->load->helper(array('form'));
+            //载入user模型
+            $this->load->model('user_model');
+            //载入表单验证
+            $this->load->library('form_validation');
+            //表单验证规则
+            $this->form_validation->set_rules('oldpassword','旧密码','trim|required|min_length[4]|max_length[30]');
+            $this->form_validation->set_rules('password','新密码','trim|required|min_length[4]|max_length[30]');
+            $this->form_validation->set_rules('password2','确认新密码','trim|required|matches[password]');
+
+            //自定义错误提示
+            $this->form_validation->set_message('min_length', '{field}必须至少{param}位.');
+            $this->form_validation->set_message('max_length', '{field}不得超过{param}位.');
+            $this->form_validation->set_message('matches', '{field}与{param}不一致.');
+
+            if ($this->form_validation->run() == FALSE)
+            {
+                $this->load->view('inc/header');
+                $this->load->view('user/change_password');
+                $this->load->view('inc/footer');
+            }
+            else
+            {
+                //加密
+                $oldpassword = crypt(html_escape($this->input->post('oldpassword')),$this->config->item('salt'));
+                $user_id = $this->session->user_id;
+
+
+                $auth = $this->user_model->password_check($user_id,$oldpassword);
+                if($auth)
+                {
+                    $password = crypt(html_escape($this->input->post('password')),$this->config->item('salt'));
+                    $this->user_model->set_password($user_id,$password);
+                    $data['message'] = '修改成功,请重新登陆账号!';
+                    $data['url'] = 'user/logout';
+                    $this->load->view('inc/header');
+                    $this->load->view('inc/done',$data);
+                    $this->load->view('inc/footer');
+                }
+                else
+                {
+                    show_error('原密码错误,修改失败',403);
+                }
+            }
+        }
+        else
+        {
+            redirect('user/login');
+        }
+
+    }
+
+
     //用户注销
     public function logout()
     {

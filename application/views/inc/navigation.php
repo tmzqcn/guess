@@ -27,11 +27,17 @@
 
                     ?>
                     </a></li>
-                <li><a href="#">Link</a></li>
+
             </ul>
 
             <ul class="nav navbar-nav navbar-right">
-                <li><a href="#">Link</a></li>
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">账号 <span class="caret"></span></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="<?php echo base_url('user/change_password'); ?>">修改密码</a></li>
+
+                    </ul>
+                </li>
                 <?php
                     if($this->verify->authorize_by_role('role_guess_admin',$this->session->roles))
                     {

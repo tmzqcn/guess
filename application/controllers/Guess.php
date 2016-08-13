@@ -6,50 +6,58 @@ class Guess extends CI_Controller
     //
     public function index()
     {
-        //获取所有用户
-        $this->load->model('guess_model');
-        //载入表单辅助函数
-        $this->load->helper(array('form'));
-        //分页函数
-        $this->load->library('pagination');
-        //要使用分页的目标url
-        $config['base_url'] = base_url('guess/index');
-        $this->config->load('pagination.php');
-        $data['match'] = $this->guess_model->get_match($this->uri->segment(3, 1),$this->config->item('per_page'));
-        $match_num = 0;
-        foreach ($data['match'] as $match)
+        if($this->verify->authorize_by_role('role_guess_admin',$this->session->roles))
         {
-            $home_info = $this->guess_model->get_team_by_id($match->home_id);
-            $away_info = $this->guess_model->get_team_by_id($match->away_id);
-            $ratio = $this->guess_model->get_bet_ratio($match->id);
-            //把球队名称插入结果集
-            $data['match'][$match_num]->home_name = $home_info->team_name;
-            $data['match'][$match_num]->away_name = $away_info->team_name;
-            $data['match'][$match_num]->win = $ratio['win'];
-            $data['match'][$match_num]->fail = $ratio['fail'];
-            $data['match'][$match_num]->draw = $ratio['draw'];
-            //把赔率插入结果集
-            $odds_info = $this->guess_model->get_odds($match->id);
-            foreach($odds_info as $odds)
+            //获取所有用户
+            $this->load->model('guess_model');
+            //载入表单辅助函数
+            $this->load->helper(array('form'));
+            //分页函数
+            $this->load->library('pagination');
+            //要使用分页的目标url
+            $config['base_url'] = base_url('guess/index');
+            $this->config->load('pagination.php');
+            $data['match'] = $this->guess_model->get_match($this->uri->segment(3, 1),$this->config->item('per_page'));
+            $match_num = 0;
+            foreach ($data['match'] as $match)
             {
-                $s = $odds->score;
-                if($s == '1')
-                    $s = 'win_odds';
-                if($s == '0')
-                    $s = 'draw_odds';
-                if($s == '-1')
-                    $s = 'fail_odds';
-                $data['match'][$match_num]->$s = $odds->odds;
+                $home_info = $this->guess_model->get_team_by_id($match->home_id);
+                $away_info = $this->guess_model->get_team_by_id($match->away_id);
+                $ratio = $this->guess_model->get_bet_ratio($match->id);
+                //把球队名称插入结果集
+                $data['match'][$match_num]->home_name = $home_info->team_name;
+                $data['match'][$match_num]->away_name = $away_info->team_name;
+                $data['match'][$match_num]->win = $ratio['win'];
+                $data['match'][$match_num]->fail = $ratio['fail'];
+                $data['match'][$match_num]->draw = $ratio['draw'];
+                //把赔率插入结果集
+                $odds_info = $this->guess_model->get_odds($match->id);
+                foreach($odds_info as $odds)
+                {
+                    $s = $odds->score;
+                    if($s == '1')
+                        $s = 'win_odds';
+                    if($s == '0')
+                        $s = 'draw_odds';
+                    if($s == '-1')
+                        $s = 'fail_odds';
+                    $data['match'][$match_num]->$s = $odds->odds;
+                }
+                //var_dump($data['match'][$match_num]);
+                $match_num++;
             }
-            //var_dump($data['match'][$match_num]);
-            $match_num++;
+            //数据总数
+            $config['total_rows'] = $this->guess_model->get_match_num();
+            $this->pagination->initialize($config);
+            $this->load->view('inc/header');
+            $this->load->view('guess/index',$data);
+            $this->load->view('inc/footer');
         }
-        //数据总数
-        $config['total_rows'] = $this->guess_model->get_match_num();
-        $this->pagination->initialize($config);
-        $this->load->view('inc/header');
-        $this->load->view('guess/index',$data);
-        $this->load->view('inc/footer');
+        else
+        {
+            redirect('user/login');
+        }
+
     }
 
     /*
@@ -68,7 +76,7 @@ class Guess extends CI_Controller
             //要使用分页的目标url
             $config['base_url'] = base_url('guess/index');
             $this->config->load('pagination.php');
-            $data['match'] = $this->guess_model->get_match($this->uri->segment(3, 1),$this->config->item('per_page'));
+            $data['match'] = $this->guess_model->get_not_submitted_match($this->uri->segment(3, 1),$this->config->item('per_page'));
             $match_num = 0;
             foreach ($data['match'] as $match)
             {
@@ -336,19 +344,34 @@ class Guess extends CI_Controller
             {
                 $arr['msg'] .= '客队比分必须为非负整数.';
             }
-            //转换为int整数
-            $home_score = intval($home_score);
-            $away_score = intval($away_score);
-
             if($arr['msg'] == '')
             {
-                $arr['msg'] = '竞猜成功！TM币扣除';
+                //转换为int整数
+                $home_score = intval($home_score);
+                $away_score = intval($away_score);
+
+                $match_id = html_escape($this->input->post('match_id'));
+                $result = $home_score - $away_score;
+                //载入模型
+                $this->load->model('guess_model');
+                $id = $this->guess_model->get_guess_success_id($match_id,$result);
+
+                //如果有竞猜成功记录
+                if(count($id)>0)
+                {
+                    //获取竞猜系统税率
+                    $tax = $this->config->item('guess_tax');
+                    $this->guess_model->handle_match_result($id,$tax);
+                }
+
+                //$arr['msg'] = var_dump($id);
                 $arr['state'] = 200;
-                $arr['home_score'] = $home_score;
-                $arr['away_score'] = $away_score;
+                //$arr['home_score'] = $home_score;
+                //$arr['away_score'] = $away_score;
             }
             else
             {
+                $arr['msg'] .= '提交比分失败.';
                 $arr['state'] = 500;
             }
         }
@@ -415,14 +438,14 @@ class Guess extends CI_Controller
     }
 
     //删除比赛
-    public function delete()
+    public function delete($match_id)
     {
         if($this->verify->authorize_by_role('role_guess_admin',$this->session->roles))
         {
             //载入模型
             $this->load->model('guess_model');
-            $tmp = $this->guess_model->get_bet_ratio(8);
-            var_dump($tmp);
+            $this->guess_model->delete_match($match_id);
+            redirect('guess/admin');
         }
         else
         {

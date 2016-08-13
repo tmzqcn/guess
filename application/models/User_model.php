@@ -21,11 +21,13 @@
         }
 
 
-        public function update($user_obj)
+        public function set_password($id,$password)
         {
-            $user_obj->update_at = time();
-            $this->db->update('guess_user', $user_obj);
-
+            $data = array(
+                'password' => $password
+            );
+            $this->db->where('id',$id);
+            $this->db->update('guess_user', $data);
         }
 
         //创建用户
@@ -123,6 +125,20 @@
             {
                 return FALSE;
             }
+        }
+
+        //判断密码是否匹配
+        public function password_check($user_id,$password)
+        {
+            $query = $this->db->where('id', $user_id)
+                ->get('guess_user');
+            $row = $query->row();
+            if(isset($row))
+            {
+                if($row->password == $password)
+                    return TRUE;
+            }
+            return FALSE;
         }
 
         /*

@@ -294,6 +294,37 @@
             */
             return $query->result();
         }
+
+        /*
+         * 获取沒提交比分的match
+         * page_num是当前页码
+         * num_per_page是每页显示数目
+         *
+         */
+        public function get_not_submitted_match($page_num=1,$num_per_page=20)
+        {
+
+            $query = $this->db->where('submitted',0)
+                ->limit($num_per_page,($page_num-1)*$num_per_page)
+                ->order_by('fixture', 'ASC')
+                ->get('guess_match_info')
+            ;
+
+
+            /*
+             *
+             $this->db->select('match.home_id,match.away_id,match.fixture,match.deadline,match.update_at,team.team_name,team.id')
+                ->from('guess_match_info as match')
+                ->join('guess_team_info as team','match.home_id=team.id or match.away_id=team.id')
+                ->limit($num_per_page,($page_num-1)*$num_per_page)
+                ->order_by('match.id', 'DESC')
+                ;
+            $query = $this->db->get();
+            */
+            return $query->result();
+        }
+
+
         //返回所有match数目
         public function get_match_num()
         {
@@ -352,12 +383,19 @@
 
 
         /*
-         * 从user_id用户扣除point
+         * 从user_id用户更新point
          *
          */
-        public function reduce_point($user_id,$point)
+        public function update_point($user_id,$point,$operator='+')
         {
-            $p = $this->get_point($user_id)->point - $point;
+            if($operator == '+')
+            {
+                $p = $this->get_point($user_id)->point + $point;
+            }
+            if($operator == '-')
+            {
+                $p = $this->get_point($user_id)->point - $point;
+            }
 
             $data = array(
                 'point' => $p
@@ -374,7 +412,7 @@
         {
             $this->db->trans_start();
             $this->add_guess_info($match_id,$result,$point,$user_id);
-            $this->reduce_point($user_id,$point);
+            $this->update_point($user_id,$point,'-');
 
             $this->db->trans_complete();
         }
@@ -423,4 +461,111 @@
 
         }
 
+        /*
+         * 获取竞猜成功的数据id
+         *
+         * return array()
+         */
+        public function get_guess_success_id($match_id,$result)
+        {
+            $this->db->select('guess_id');
+            $this->db->from('guess_guess_info');
+            $this->db->where('match_id',$match_id);
+            $this->db->where('score',$result);
+            $match_id = $this->db->get();
+
+            $id = array();
+            foreach($match_id->result() as $re)
+            {
+                $id[] = $re->guess_id;
+            }
+            return $id;
+        }
+
+        /*
+         * 处理竞猜成功的数据
+         * $id 为数组
+         *
+         */
+        public function handle_match_result($id,$tax=0.1)
+        {
+            $this->db->trans_start();
+            $match_id = array();
+            foreach($id as $item)
+            {
+                $info = $this->get_guess_info($item);
+                if($info)
+                {
+                    $user_id = $info->user_id;
+                    $point = $info->point;
+
+                    if (!in_array($info->match_id, $match_id))
+                    {
+                        //放入尾部
+                        array_push($match_id, $info->match_id);
+                    }
+                }
+                else
+                {
+                    return False;
+                }
+                //扣除税率
+                $point = intval($point*(1-$tax))+1;
+                $this->update_point($user_id,$point,'+');
+                $this->set_guess_corect($item);
+            }
+            foreach($match_id as $match)
+            {
+                $this->set_match_submitted($match);
+            }
+
+            $this->db->trans_complete();
+        }
+
+        /*
+         * 设置竞猜信息为竞猜正确
+         */
+        public function set_guess_corect($id)
+        {
+            $data = array(
+                'guess_result' => 1
+            );
+            $this->db->where('guess_id',$id);
+            $this->db->update('guess_guess_info', $data);
+        }
+
+        /*
+         * 设置比赛为已提交比分
+         */
+        public function set_match_submitted($match_id)
+        {
+            $data = array(
+                'submitted' => 1
+            );
+            $this->db->where('id',$match_id);
+            $this->db->update('guess_match_info', $data);
+        }
+        
+        /*
+         * 获取竞猜信息
+         */
+        public function get_guess_info($id)
+        {
+            $query = $this->db->where('guess_id', $id)
+                ->get('guess_guess_info');
+            $row = $query->row();
+            if(isset($row))
+            {
+                return $row;
+            }
+            return FALSE;
+        }
+
+        /*
+         * 删除比赛
+         */
+        public function delete_match($match_id)
+        {
+            $this->db->delete('guess_match_info', array('id' => $match_id));
+        }
     }
