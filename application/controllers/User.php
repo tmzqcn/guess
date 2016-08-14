@@ -136,7 +136,7 @@ class User extends CI_Controller
             //判断账号是否停用
             if(!$this->user_model->is_enable($email))
             {
-                $data['error_message'] = '账号停用！';
+                $data['error_message'] = '账号名或密码错误！或账号被停用！';
                 $this->load->view('inc/header');
                 $this->load->view('user/login',$data);
                 $this->load->view('inc/footer');
@@ -270,6 +270,20 @@ class User extends CI_Controller
         if ($this->user_model->name_check($name))
         {
             $this->form_validation->set_message('name_check', '昵称：{field} 已存在');
+            return FALSE;
+        }
+        else
+        {
+            return TRUE;
+        }
+    }
+
+    //回调验证tm_id是否存在
+    public function tm_check($tm_id)
+    {
+        if ($this->user_model->tm_check($tm_id))
+        {
+            $this->form_validation->set_message('tm_check', 'TM ID：{field} 已存在');
             return FALSE;
         }
         else

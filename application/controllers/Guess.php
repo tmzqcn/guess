@@ -6,7 +6,7 @@ class Guess extends CI_Controller
     //
     public function index()
     {
-        if($this->verify->authorize_by_role('role_guess_admin',$this->session->roles))
+        if($this->verify->authorize_by_role('role_user',$this->session->roles))
         {
             //获取所有用户
             $this->load->model('guess_model');
@@ -365,6 +365,7 @@ class Guess extends CI_Controller
                 }
 
                 //$arr['msg'] = var_dump($id);
+                $arr['msg'] .= '提交比分成功.';
                 $arr['state'] = 200;
                 //$arr['home_score'] = $home_score;
                 //$arr['away_score'] = $away_score;

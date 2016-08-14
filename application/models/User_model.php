@@ -127,6 +127,21 @@
             }
         }
 
+        //判断tmid是否注册
+        public function tm_check($tm_id='0')
+        {
+            //获取此昵称用户个数
+            $name_num = $this->db->get_where('guess_user',array('tm_id'=>$tm_id))->num_rows();
+            if($name_num)
+            {
+                return TRUE;
+            }
+            else
+            {
+                return FALSE;
+            }
+        }
+
         //判断密码是否匹配
         public function password_check($user_id,$password)
         {
