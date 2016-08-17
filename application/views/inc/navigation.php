@@ -19,11 +19,15 @@
                     //载入模型
                     $this->CI =& get_instance();
                     $this->CI->load->model('guess_model');
-                    if(isset($this->session->user_id))
+                    if(isset($this->session->name))
                     {
-                        echo 'TM币：<span id="tm_point">'.$this->CI->guess_model->get_point($this->session->user_id)->point.'</span>';
+                        echo '欢迎您，<span id="name">'.$this->session->name.'</span>';
                     }
 
+                   if(isset($this->session->user_id))
+                    {
+                        echo '！　TM币：<span id="tm_point">'.$this->CI->guess_model->get_point($this->session->user_id)->point.'</span>';
+                    }
 
                     ?>
                     </a></li>

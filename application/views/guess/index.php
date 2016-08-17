@@ -78,7 +78,7 @@ foreach($match as $m)
     <div class="col-sm-2">
         <label class="sr-only" for="bet_input_'.$m->id.'">Amount (in dollars)</label>
         <div class="input-group">
-         <div class="input-group-addon"><img src="asset/img/pro_icon_micro.png" alt="￥" /></div>
+          <div class="input-group-addon"><img src="/asset/img/pro_icon_micro.png" alt="￥" /></div>
           <input type="text" class="form-control " name="bet_input_'.$m->id.'" id="bet_input_'.$m->id.'" placeholder="TM币">
           <input type="hidden" value="'.$m->id.'">
 

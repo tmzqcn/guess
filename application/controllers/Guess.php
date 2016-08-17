@@ -365,7 +365,7 @@ class Guess extends CI_Controller
                 }
 
                 //$arr['msg'] = var_dump($id);
-                $arr['msg'] .= '提交比分成功.';
+				$arr['msg'] .= '提交比分成功.'; 
                 $arr['state'] = 200;
                 //$arr['home_score'] = $home_score;
                 //$arr['away_score'] = $away_score;

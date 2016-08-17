@@ -13,7 +13,7 @@ echo form_open(base_url('user/login'), 'class="form-horizontal" id="user_login_f
 <div class="form-group">
     <label for="email" class="col-sm-2 control-label">邮箱</label>
     <div class="col-sm-10">
-        <input type="text" class="form-control validate[required,minSize[4],maxSize[20],custom[email]]" id="email" name="email" placeholder="邮箱" value="<?php echo html_escape(set_value('email')); ?>">
+        <input type="text" class="form-control validate[required,minSize[4],maxSize[30],custom[email]]" id="email" name="email" placeholder="邮箱" value="<?php echo html_escape(set_value('email')); ?>">
     </div>
 </div>
 <div class="form-group">
